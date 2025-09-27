@@ -33,6 +33,14 @@ public class GraphqlController {
 
     @QueryMapping
     public List<Product> productsByCategory(@Argument Long categoryId) {
+        System.out.println("=== Controller productsByCategory ===");
+        System.out.println("Input id: " + categoryId);
+
+        List<Product> products = productService.getByCategory(categoryId);
+
+        System.out.println("Found products: " + products.size());
+        products.forEach(p -> System.out.println("Product: " + p.getId() + " - " + p.getTitle()));
+
         return productService.getByCategory(categoryId);
     }
 

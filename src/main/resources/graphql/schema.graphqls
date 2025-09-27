@@ -46,7 +46,7 @@ input ProductInput {
 
 type Query {
   allProductsSortedByPriceAsc: [Product]
-  productsByCategory(categoryId: ID!): [Product]
+  productsByCategory(id: ID!): [Product]
 
   users: [User]
   userById(id: ID!): User

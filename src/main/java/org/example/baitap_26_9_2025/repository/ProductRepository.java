@@ -10,6 +10,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAllByOrderByPriceAsc();
 
     // Lấy các product của 1 category: vì relation Category <-> User, ta join qua user.categories
-    @Query("SELECT p FROM Product p WHERE p.category.category_id = :categoryId")
+    @Query("SELECT p FROM Product p WHERE p.category.id = :categoryId")
     List<Product> findProductsByCategoryId(Long categoryId);
+
 }

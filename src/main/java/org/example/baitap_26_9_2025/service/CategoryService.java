@@ -37,10 +37,10 @@ public class CategoryService {
             throw new RuntimeException("Cannot delete Category because it still has Products.");
         }
 
-        // Nếu Category vẫn liên kết với User (many-to-many)
-        if (ex.getUsers() != null && !ex.getUsers().isEmpty()) {
-            throw new RuntimeException("Cannot delete Category because it is assigned to Users.");
-        }
+//        // Nếu Category vẫn liên kết với User (many-to-many)
+//        if (ex.getUsers() != null && !ex.getUsers().isEmpty()) {
+//            throw new RuntimeException("Cannot delete Category because it is assigned to Users.");
+//        }
 
         categoryRepository.delete(ex);
         return true;
