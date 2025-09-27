@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products_gql")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,7 +28,7 @@ public class Product {
 
     // Many-to-One với User
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false) // foreign key
-    private User user;
+    @JoinColumn(name = "category_id", nullable = false) // foreign key
+    private Category category;
 }
 

@@ -4,7 +4,6 @@ type User {
   email: String
   phone: String
   categories: [Category]
-  products: [Product]
 }
 
 type Category {
@@ -12,6 +11,7 @@ type Category {
   name: String
   images: String
   users: [User]
+  products: [Product]
 }
 
 type Product {
@@ -20,7 +20,7 @@ type Product {
   quantity: Int
   description: String
   price: Float
-  user: User
+  category: Category
 }
 
 input UserInput {
@@ -33,6 +33,7 @@ input UserInput {
 input CategoryInput {
   name: String
   images: String
+  userIds: [ID!]
 }
 
 input ProductInput {
@@ -40,7 +41,7 @@ input ProductInput {
   quantity: Int
   description: String
   price: Float
-  userId: ID!
+  categoryId: ID!
 }
 
 type Query {

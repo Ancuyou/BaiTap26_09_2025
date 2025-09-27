@@ -15,16 +15,17 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class GraphqlController {
-    @Autowired
-    private ProductService productService;
+    @Autowired private ProductService productService;
     @Autowired private UserService userService;
     @Autowired private CategoryService categoryService;
 
-    // ---- Queries ----
+    /* ===================== QUERIES ===================== */
     @QueryMapping
     public List<Product> allProductsSortedByPriceAsc() {
         return productService.getAllSortedByPriceAsc();
@@ -44,16 +45,17 @@ public class GraphqlController {
     @QueryMapping public List<Product> products() { return productService.findAll(); }
     @QueryMapping public Product productById(@Argument Long id) { return productService.findById(id); }
 
-    // ---- Mutations ----
+    /* ===================== MUTATIONS ===================== */
+
+    /* ---------- USER ---------- */
     @MutationMapping
     public User createUser(@Argument UserInput input) {
-        User u = User.builder()
+        return userService.create(User.builder()
                 .fullname(input.fullname())
                 .email(input.email())
                 .password(input.password())
                 .phone(input.phone())
-                .build();
-        return userService.create(u);
+                .build());
     }
 
     @MutationMapping
@@ -67,35 +69,86 @@ public class GraphqlController {
     }
 
     @MutationMapping
-    public Boolean deleteUser(@Argument Long id) { return userService.delete(id); }
+    public Boolean deleteUser(@Argument Long id) {
+        return userService.delete(id);
+    }
 
+    /* ---------- CATEGORY ---------- */
     @MutationMapping
     public Category createCategory(@Argument CategoryInput input) {
-        Category c = Category.builder().name(input.name()).images(input.images()).build();
-        return categoryService.create(c);
+        // Validate danh sách user
+        Set<User> users = new HashSet<>();
+        if (input.userIds() != null && !input.userIds().isEmpty()) {
+            for (Long userId : input.userIds()) {
+                User user = userService.findById(userId);
+                if (user == null) {
+                    throw new RuntimeException("User with id " + userId + " not found");
+                }
+                users.add(user);
+            }
+        }
+
+        Category category = Category.builder()
+                .name(input.name())
+                .images(input.images())
+                .users(users)
+                .build();
+
+        return categoryService.create(category);
     }
 
     @MutationMapping
     public Category updateCategory(@Argument Long id, @Argument CategoryInput input) {
+        Set<User> users = new HashSet<>();
+        if (input.userIds() != null && !input.userIds().isEmpty()) {
+            for (Long userId : input.userIds()) {
+                User user = userService.findById(userId);
+                if (user == null) {
+                    throw new RuntimeException("User with id " + userId + " not found");
+                }
+                users.add(user);
+            }
+        }
+
         Category c = new Category();
         c.setName(input.name());
         c.setImages(input.images());
+        c.setUsers(users);
+
         return categoryService.update(id, c);
     }
 
     @MutationMapping
-    public Boolean deleteCategory(@Argument Long id) { return categoryService.delete(id); }
+    public Boolean deleteCategory(@Argument Long id) {
+        return categoryService.delete(id);
+    }
 
+    /* ---------- PRODUCT ---------- */
     @MutationMapping
     public Product createProduct(@Argument ProductInput input) {
-        return productService.createProduct(input.title(), input.quantity(), input.description(), input.price(), input.userId());
+        return productService.createProduct(
+                input.title(),
+                input.quantity(),
+                input.description(),
+                input.price(),
+                input.categoryId()
+        );
     }
 
     @MutationMapping
     public Product updateProduct(@Argument Long id, @Argument ProductInput input) {
-        return productService.updateProduct(id, input.title(), input.quantity(), input.description(), input.price());
+        return productService.updateProduct(
+                id,
+                input.title(),
+                input.quantity(),
+                input.description(),
+                input.price()
+        );
     }
 
     @MutationMapping
-    public Boolean deleteProduct(@Argument Long id) { return productService.deleteProduct(id); }
+    public Boolean deleteProduct(@Argument Long id) {
+        return productService.deleteProduct(id);
+    }
 }
+

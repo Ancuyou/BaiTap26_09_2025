@@ -8,8 +8,9 @@ public record ProductInput(
         @JsonProperty("quantity") Integer quantity,
         @JsonProperty("description") String description,
         @JsonProperty("price") Double price,
-        @JsonProperty("userId") Long userId
+        @JsonProperty("categoryId") Long categoryId
 ) {
     @JsonCreator
-    public ProductInput { }
+    public ProductInput {}
 }
+

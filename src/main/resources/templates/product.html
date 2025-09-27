@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="container py-4">
+<h2 class="mb-4">Product Management</h2>
+<a href="javascript:history.back()" class="btn btn-secondary mb-3">Back</a>
+
+<!-- Filter -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" id="searchCategoryId" class="form-control" placeholder="Category ID">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100" onclick="loadProducts()">Search</button>
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-success w-100" onclick="loadSortedByPrice()">Sort by Price ASC</button>
+    </div>
+</div>
+
+<!-- Form Create Product -->
+<form id="productForm" class="mb-4">
+    <input type="hidden" id="productId">
+    <div class="row">
+        <div class="col-md-3"><input type="text" id="title" class="form-control" placeholder="Title" required></div>
+        <div class="col-md-2"><input type="number" id="quantity" class="form-control" placeholder="Quantity" required></div>
+        <div class="col-md-3"><input type="text" id="description" class="form-control" placeholder="Description"></div>
+        <div class="col-md-2"><input type="number" step="0.01" id="price" class="form-control" placeholder="Price" required></div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">Save</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>ID</th><th>Title</th><th>Quantity</th><th>Description</th><th>Price</th><th>Action</th>
+    </tr>
+    </thead>
+    <tbody id="productTable"></tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const GRAPHQL_URL = '/graphql';
+    const defaultCategoryId = new URLSearchParams(window.location.search).get('categoryId');
+    $('#searchCategoryId').val(defaultCategoryId || '');
+
+    function loadProducts() {
+        const cateId = $('#searchCategoryId').val();
+        const query = cateId
+            ? `{ productsByCategory(categoryId: ${cateId}) { id title quantity description price } }`
+            : `{ products { id title quantity description price } }`;
+
+        $.ajax({
+            url: GRAPHQL_URL,
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ query }),
+            success: function (data) {
+                const products = cateId ? data.data.productsByCategory : data.data.products;
+                renderTable(products);
+            },
+            error: function (xhr) {
+                console.error("GraphQL loadProducts error:", xhr.responseText);
+                alert("Error loading products: " + xhr.responseText);
+            }
+        });
+    }
+
+    function loadSortedByPrice() {
+        $.ajax({
+            url: GRAPHQL_URL,
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ query: '{ allProductsSortedByPriceAsc { id title quantity description price } }' }),
+            success: function (data) {
+                renderTable(data.data.allProductsSortedByPriceAsc);
+            },
+            error: function (xhr) {
+                console.error("GraphQL loadSortedByPrice error:", xhr.responseText);
+                alert("Error loading sorted products: " + xhr.responseText);
+            }
+        });
+    }
+
+    function renderTable(products) {
+        let rows = '';
+        products.forEach(p => {
+            rows += `<tr>
+                <td>${p.id}</td>
+                <td>${p.title}</td>
+                <td>${p.quantity}</td>
+                <td>${p.description || ''}</td>
+                <td>${p.price}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick="editProduct(${p.id}, '${p.title}', ${p.quantity}, '${p.description || ''}', ${p.price})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+                </td>
+            </tr>`;
+        });
+        $('#productTable').html(rows);
+    }
+
+    $('#productForm').submit(function (e) {
+        e.preventDefault();
+        const id = $('#productId').val();
+        const cateId = $('#searchCategoryId').val() || defaultCategoryId;
+        const mutation = id ? `
+            mutation {
+              updateProduct(id: ${id}, input: {
+                title: "${$('#title').val()}",
+                quantity: ${$('#quantity').val()},
+                description: "${$('#description').val()}",
+                price: ${$('#price').val()},
+                categoryId: ${cateId}
+              }) { id }
+            }
+        ` : `
+            mutation {
+              createProduct(input: {
+                title: "${$('#title').val()}",
+                quantity: ${$('#quantity').val()},
+                description: "${$('#description').val()}",
+                price: ${$('#price').val()},
+                categoryId: ${cateId}
+              }) { id }
+            }
+        `;
+
+        $.ajax({
+            url: GRAPHQL_URL,
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ query: mutation }),
+            success: function () {
+                loadProducts();
+                $('#productForm')[0].reset();
+            },
+            error: function (xhr) {
+                console.error("GraphQL saveProduct error:", xhr.responseText);
+                alert("Error saving product: " + xhr.responseText);
+            }
+        });
+    });
+
+    function editProduct(id, title, quantity, description, price) {
+        $('#productId').val(id);
+        $('#title').val(title);
+        $('#quantity').val(quantity);
+        $('#description').val(description);
+        $('#price').val(price);
+    }
+
+    function deleteProduct(id) {
+        $.ajax({
+            url: GRAPHQL_URL,
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ query: `mutation { deleteProduct(id: ${id}) }` }),
+            success: function () {
+                loadProducts();
+            },
+            error: function (xhr) {
+                console.error("GraphQL deleteProduct error:", xhr.responseText);
+                alert("Error deleting product: " + xhr.responseText);
+            }
+        });
+    }
+
+    $(document).ready(loadProducts);
+</script>
+</body>
+</html>

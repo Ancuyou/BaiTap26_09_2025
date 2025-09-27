@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users_gql")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,9 +40,5 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "category_id") // khóa ngoại từ Category
     )
     private Set<Category> categories = new HashSet<>();
-
-    // One-to-Many với Product
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Product> products;
 }
 
