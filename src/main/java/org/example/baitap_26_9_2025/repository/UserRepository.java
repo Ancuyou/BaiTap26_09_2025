@@ -1,4 +1,7 @@
 package org.example.baitap_26_9_2025.repository;
 
-public class UserRepository {
+import org.example.baitap_26_9_2025.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
 }
