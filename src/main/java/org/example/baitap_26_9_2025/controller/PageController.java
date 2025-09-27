@@ -21,11 +21,19 @@ public class PageController {
         return "category";
     }
 
-    // Trang Product - truyền categoryId để mặc định lọc sản phẩm
     @GetMapping("/products")
     public String productPage(@RequestParam(value = "categoryId", required = false) Long categoryId,
                               Model model) {
+        System.out.println("CategoryId: " + categoryId);
         model.addAttribute("categoryId", categoryId);
         return "product";
     }
+//    @GetMapping("/products")
+//    public String productPage(@RequestParam(value = "categoryId", required = false) Long categoryId,
+//                              Model model) {
+//        if (categoryId != null) {
+//            return "redirect:/products?categoryId=" + categoryId;
+//        }
+//        return "product";
+//    }
 }

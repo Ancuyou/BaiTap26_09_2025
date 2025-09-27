@@ -25,7 +25,8 @@ public class ProductService {
 
     /** Lấy danh sách sản phẩm theo category */
     public List<Product> getByCategory(Long categoryId) {
-        return productRepository.findProductsByCategoryId(categoryId);
+//        return productRepository.findProductsByCategoryId(categoryId);
+        return productRepository.findByCategoryId(categoryId);
     }
 
     /** Tạo sản phẩm mới, gắn với 1 category */

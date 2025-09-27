@@ -73,7 +73,9 @@
 <script>
     const GRAPHQL_URL = '/graphql';
     const defaultCategoryId = new URLSearchParams(window.location.search).get('categoryId');
-    $('#searchCategoryId').val(defaultCategoryId || '');
+    if (defaultCategoryId) {
+        $('#searchCategoryId').val(defaultCategoryId);
+    }
 
     // Helper functions để hiển thị error/success
     function showError(message) {
@@ -120,12 +122,13 @@
         const cateId = $('#searchCategoryId').val().trim();
 
         // SỬA: Dùng đúng tên parameter theo GraphQL schema
-        const query = cateId
-            ? `{ productsByCategory(id: ${cateId}) { id title quantity description price category { id name } } }`
-            : `{ products { id title quantity description price category { id name } } }`;
-
-        console.log("Loading products with query:", query);
-
+        if (cateId) {
+            query = `{ productsByCategory(id: ${cateId}) { id title quantity description price category { id name } } }`;
+        } else {
+            query = `{ products { id title quantity description price category { id name } } }`;
+        }
+        console.log("cateId =", cateId);
+        console.log("Generated query =", query);
         $.ajax({
             url: GRAPHQL_URL,
             method: "POST",
